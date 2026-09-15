@@ -1,0 +1,24 @@
+name: Support for another agent
+description: You use a coding agent Quiel does not support yet
+labels: [agent-support]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Quiel needs two things from an agent program: it has to speak MCP,
+        and it has to let a hook intercept a tool call *before* it runs.
+        Without the second one the trust profile cannot protect anything.
+  - type: input
+    id: agent
+    attributes:
+      label: Which agent, and a link to it
+    validations:
+      required: true
+  - type: input
+    id: hooks
+    attributes:
+      label: Link to its hooks/plugins documentation, if you know it
+  - type: textarea
+    id: why
+    attributes:
+      label: Anything else worth knowing

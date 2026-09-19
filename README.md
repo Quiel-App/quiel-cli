@@ -1,10 +1,10 @@
 # @quiel/cli
 
-**Русская версия — [README.ru.md](https://github.com/Quiel-AI/quiel-cli/blob/main/README.ru.md).**
+**Русская версия — [README.ru.md](https://github.com/Quiel-App/quiel-cli/blob/main/README.ru.md).**
 
 [![npm](https://img.shields.io/npm/v/@quiel/cli)](https://www.npmjs.com/package/@quiel/cli)
 
-The Quiel client: a CLI **and** an MCP server that connects your coding agent — Claude Code, Codex, Cursor or OpenCode — to a project on a [Quiel](https://quiel.ai) platform.
+The Quiel client: a CLI **and** an MCP server that connects your coding agent — Claude Code, Codex, Cursor or OpenCode — to a project on a [Quiel](https://quiel.app) platform.
 
 Quiel is a hosted product that orchestrates a team and the coding agents its members run: tasks live in one graph, each person connects their own agent, and in autonomous mode the agent picks up tasks for its role, does the work, pushes to git and reports back — while people watch it happen and stay in the loop.
 
@@ -12,11 +12,14 @@ This package is the part that runs **on your machine**.
 
 ## What it does
 
-- **Gives your agent the platform's tools over MCP** — take the next task, read project context and documents, ask a human, request approval for a dangerous action, submit work.
+- **Gives your agent the platform's tools over MCP** — take the next task, read project context and documents, read the files a human attached to the task, ask a human (and ask them to attach a file), request approval for a dangerous action, submit work.
 - **Installs hooks into your agent** so a shell command is checked against the project's trust profile *before* it runs. A command that matches a stop pattern is refused; a command that needs a human gets one.
 - **Keeps the connection and the task lease alive**, so the platform knows the task is being worked on and not abandoned.
+- **Counts the tokens each task costs** and reports the totals, so a project can be looked at afterwards.
 
-It never sends the contents of your files anywhere — only file names, paths and commands.
+It never sends the contents of your files anywhere — only file names, paths and commands. The token counters are numbers only: the client reads them from the agent's own transcript on your machine and sends the totals, never the conversation.
+
+Files go the other way only: a human attaches them in the browser, the agent downloads and reads them. The agent never uploads files of its own.
 
 ## Requirements
 
@@ -117,7 +120,7 @@ Existing configuration is merged, not overwritten: other MCP servers, other hook
 
 ## Reporting a problem
 
-Issues are open: **https://github.com/Quiel-AI/quiel-cli/issues**
+Issues are open: **https://github.com/Quiel-App/quiel-cli/issues**
 
 Please include the output of:
 

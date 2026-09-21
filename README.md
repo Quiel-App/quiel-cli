@@ -133,8 +133,10 @@ quiel status
 
 ## About this repository
 
-This repository is the documentation and the issue tracker for `@quiel/cli`. Quiel is a commercial hosted product: the client is distributed as a built package under a proprietary licence, and its source is not published here. What the client does to your machine is documented above — and every file it writes lands in your project directory, where you can read it.
+This repository is the documentation and the issue tracker for `@quiel/cli`. Quiel is a commercial hosted product: the platform runs on our servers and its source is not published. The client is the part that runs on your machine, and it ships under a permissive licence so that installing it needs no legal review. What the client does to your machine is documented above — and every file it writes lands in your project directory, where you can read it.
 
 ## Licence
 
-Proprietary (`UNLICENSED`). Copyright © Quiel. All rights reserved.
+The client — this package — is licensed under Apache-2.0; the full text is in `LICENSE`. That covers the command-line client only: the Quiel platform is a hosted service, not a published codebase.
+
+Copyright © 2026 Quiel.

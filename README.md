@@ -16,10 +16,13 @@ This package is the part that runs **on your machine**.
 - **Installs hooks into your agent** so a shell command is checked against the project's trust profile *before* it runs. A command that matches a stop pattern is refused; a command that needs a human gets one.
 - **Keeps the connection and the task lease alive**, so the platform knows the task is being worked on and not abandoned.
 - **Counts the tokens each task costs** and reports the totals, so a project can be looked at afterwards.
+- **Rescues unfinished work when your subscription limit runs out.** It commits what the agent managed and pushes it to the task's own branch, marked as interrupted, so the next person or agent continues from there instead of starting over. It never pushes to your main branch.
 
 It never sends the contents of your files anywhere — only file names, paths and commands. The token counters are numbers only: the client reads them from the agent's own transcript on your machine and sends the totals, never the conversation.
 
 Files go the other way only: a human attaches them in the browser, the agent downloads and reads them. The agent never uploads files of its own.
+
+**The client does commit and push, and only ever to the task's branch.** This happens in one case: your subscription limit runs out mid-task. Losing half a day's work is worse than an extra branch in the repository — but you should know it happens, and where.
 
 ## Requirements
 

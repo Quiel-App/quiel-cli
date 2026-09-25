@@ -4,6 +4,30 @@ What changed in `@quiel/cli`, newest first. Русская версия — [CHA
 
 Some entries are marked **Platform** — those changed on the Quiel server and reached you without upgrading anything. They are listed because they change what your agent does, and a client-only changelog would leave that unexplained.
 
+## 0.7.0 — 2026-09-25
+
+### Added
+
+- **`report` takes structured follow-ups.** After almost every task something is left over, and agents already list it in the report — as prose: "Follow-up: write tools — M2-07; OAuth discovery — M4-04…". Prose cannot be turned into a task with a button, and a week later nobody finds it. The new `followUps` field takes a list instead: each entry has a title, a type, a priority and a `kind` — `blocking` ("what is done cannot count as done without this") or `later`. A person turns them into tasks with one click, and the new task is linked to the original automatically.
+
+- **The client reports how your agent's work is paid for.** Quiel shows what a task cost in tokens, but tokens only become money if it knows who pays: on a subscription the marginal cost of a task is zero. The client now works this out from its own environment and sends one word — `SUBSCRIPTION`, `API` or `CLOUD`. **No key, no variable name and no variable value leaves your machine**, only the conclusion. It is a guess, not a fact — Claude Code asks you to approve an API key before it overrides your subscription, and you may have declined — so the agent panel lets you correct it, and your correction survives reconnects.
+
+### Platform
+
+Changes on the Quiel server — they reach you without upgrading the client.
+
+- **Red CI is visible where the decision is made.** The platform saw GitHub checks and showed them in a card above, but the accept button had no idea: tasks were accepted with a red CI because the agent's report said `testResult: PASSED` — its words, usually about a local run. A warning now stands next to the button. A warning, not a block: the hard block is a project setting and is off by default on purpose.
+- **You can see whether a task's code reached the main branch.** A task counts as done by its status, not by where its code ended up. In a real project a pull request was opened on top of another task's branch; the base PR was merged into `main` first, this one into an already-merged branch, and the code never reached `main` while the task closed as done. The card now says when a merge went somewhere else — or when the PR was closed without merging.
+- **The repository for a pull request is chosen, not guessed.** With several GitHub repositories on a project the platform took the first one, so a front-end task's PR could quietly go to the back-end repository. It now refuses and says so instead of tossing a coin.
+- **A specification living in the repository is finally visible.** A document can now be added by **path** — `docs/SPEC.md` — instead of text or a file. The platform stores the address, not the contents: the agent opens the file on its own machine. Before this, `get_context` answered "no documents" and told the agent to ask a human about a file it could have opened.
+- **The "Now" panel for an agent.** "In progress" used to mean three different things: a subagent writing code for thirty minutes, a hung session, a lost lease. The panel tells them apart: what the agent is doing, how long the work has been running, whether it has gone silent, and what it ran last.
+- **What the agent said last is in the task card.** Progress notes lived in the feed tab, while the decision "keep waiting or step in" is made looking at the card.
+- **Task progress in words.** Branch created, tests were run, code pushed, pull request opened — and when. Read from the command log, so it says what the agent *ran*, not what succeeded; a denied command is not a milestone.
+- **The daily summary now also says what happened in the project.** Delivered over the day with pull request links, waiting for acceptance, stuck, queued per role. It goes to organisation owners and admins and to project managers.
+- **A task says how long it took.** Three numbers, not one: time in progress, time waiting for a human, and the total. Derived from status transitions, not from what an agent reports about its own session.
+- **A "Costs" section for the project.** Totals for a day, a week or a month, the ten most expensive tasks with their working time, and a breakdown by agent. With token rates set in the organisation settings, spend from metered agents is also shown in money.
+- **Follow-ups from a report turn into tasks with one button.** A list under the result: tick what you want and create, or create all at once. A created task lands in the backlog, carries a line saying where it came from, and is linked to the original. For a partial delivery, the remainder becomes its own blocking task instead of sending the whole task back for rework.
+
 ## 0.6.4 — 2026-09-25
 
 ### Added

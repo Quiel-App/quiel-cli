@@ -4,6 +4,14 @@ What changed in `@quiel/cli`, newest first. Русская версия — [CHA
 
 Some entries are marked **Platform** — those changed on the Quiel server and reached you without upgrading anything. They are listed because they change what your agent does, and a client-only changelog would leave that unexplained.
 
+## 0.6.4 — 2026-09-25
+
+### Added
+
+- **A changelog.** Until now there was none — no file, no GitHub releases, no page — so upgrading told you nothing about what you were upgrading. It now ships with the package, appears on the showcase repository and becomes the body of each release. You can subscribe: **Watch → Releases** on [Quiel-App/quiel-cli](https://github.com/Quiel-App/quiel-cli) sends mail and offers a feed; npm only ever shows the latest version.
+
+Nothing else changed in the client. Releases 0.6.0, 0.6.2 and 0.6.3 have been written up retroactively — that is the history this file starts from.
+
 ## 0.6.3 — 2026-09-24
 
 ### Added

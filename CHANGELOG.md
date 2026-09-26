@@ -4,6 +4,26 @@ What changed in `@quiel/cli`, newest first. Русская версия — [CHA
 
 Some entries are marked **Platform** — those changed on the Quiel server and reached you without upgrading anything. They are listed because they change what your agent does, and a client-only changelog would leave that unexplained.
 
+## 0.8.0 — 2026-09-26
+
+### Added
+
+- **Tasks know which repository they write to.** A project can hold several repositories, and until now a task did not say which one it belonged to — the platform took the first it found, so a front-end task's pull request could quietly go to the back-end repository. The task card now has a repository field (shown only when there is more than one), `create_task` and `plan_task` take a `repoUrl`, and the client reports which repository its own checkout is — so the dispatcher stops handing an agent work it physically cannot do. **Only the address leaves your machine, never the contents.** An agent that reports nothing keeps taking tasks exactly as before.
+
+- **The agent hears about a red CI instead of guessing.** Two things it could not see before. First: `testResult: PASSED` is the agent's word about a *local* run — if the GitHub checks on the pull request's head are red or still running, the delivery response now says so, with the names of the failing checks. It is a warning, not a refusal; the hard block stays a project setting. Second: when the repository's *default* branch is broken, the assignment and `get_context` say plainly that this is not a consequence of the agent's own work and not its job to fix inside the task — because in a real project `main` was red for days and agents kept going to fix someone else's problem.
+- **The agent is told when a dependency's code may not be in the main branch.** A task counts as done by its status, not by where its code ended up — and in a real project a pull request was merged into an already-merged branch, so the code never reached `main` while the task closed as done and its dependants went to work on nothing. The dependency is still released by status (the opposite rule would hang every project that works without pull requests), but the assignment and `get_context` now carry a line naming the suspect dependency, and `report` warns when your own pull request is aimed at another task's branch instead of the default one.
+- **The agent is told when a task has blown its budget.** A project can now set a task budget in live tokens. It is a warning, not a ceiling: the platform never stops the work. The card gets a mark, the project managers get one notification, and `report` asks the agent to say where the spend went — the task turned out larger than it looked, or it got stuck going in circles.
+
+### Platform
+
+Changes on the Quiel server — they reach you without upgrading the client.
+
+- **A broken main branch is visible in the project.** GitHub sends a check event for every run, including the ones on `main` — and the platform used to throw those away, because they belong to no task. Now the project overview carries a banner naming the failing checks, with links to their logs and a button that opens a pre-filled "fix the CI" task. Judged by the branch's latest commit, so a failure that has since been fixed raises nothing.
+- **A task can be sent back automatically when CI goes red after delivery.** Checks usually finish after the report: it arrives seconds after the push, the run takes minutes. A new project switch — off by default — lets the platform watch the pull request's head and, when the checks complete as failures, return the task to the agent the way a reviewer would, naming what failed. It spends an attempt, like any return, so three red deliveries in a row end in "Failed".
+- **A dependency that may not have reached the main branch is marked in the card.** Next to the dependency, not in a separate panel: "done" and "the code is not in main" are two claims about the same row, and the second has to argue with the first where it stands. Only when the platform knows — pull requests exist, their base branch is known, and none was merged into the default one.
+- **When a base pull request is merged, the platform reminds you to retarget the ones stacked on it.** GitHub only retargets them when the base branch is deleted; otherwise the merge goes into an already-merged branch and the code never reaches the default one. A note lands in the task's feed and the project managers get one notification listing what to retarget.
+- **What a task cost, in money and by attempt.** The card now shows money next to the tokens wherever there is something to compute it from — rates set, spend from a metered agent — and, once a task has been sent back from review, a per-attempt breakdown: a single total never says whether the rework cost more than the original work. The project's Costs screen adds a split by task type, counted across every task of the period rather than the ten most expensive.
+
 ## 0.7.0 — 2026-09-25
 
 ### Added

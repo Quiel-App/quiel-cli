@@ -4,6 +4,12 @@ What changed in `@quiel/cli`, newest first. Русская версия — [CHA
 
 Some entries are marked **Platform** — those changed on the Quiel server and reached you without upgrading anything. They are listed because they change what your agent does, and a client-only changelog would leave that unexplained.
 
+## 0.10.1 — 2026-09-29
+
+### Fixed
+
+- **Running `quiel init` again no longer asks for everything from scratch.** It used to ignore both `.quiel.json` and the token saved in `~/.quiel/credentials.json` and ask for the platform URL, the token and the rest again — and since a token is shown only once, in practice that meant issuing a new one. Now, in an already connected directory, it shows what is set up and asks a single question; Enter keeps everything, including the token. Answer "n" to change something: each question then shows the current value, and Enter keeps it. A token saved for a different platform address is never reused. Without a terminal, the saved values are used as they are; a flag changes only its own field.
+
 ## 0.10.0 — 2026-09-29
 
 ### Added

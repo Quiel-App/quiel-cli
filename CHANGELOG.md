@@ -4,6 +4,20 @@ What changed in `@quiel/cli`, newest first. Русская версия — [CHA
 
 Some entries are marked **Platform** — those changed on the Quiel server and reached you without upgrading anything. They are listed because they change what your agent does, and a client-only changelog would leave that unexplained.
 
+## 0.10.0 — 2026-09-29
+
+### Added
+
+- **The platform sees your subscription limit before it runs out.** Claude Code reports how much of the 5-hour and weekly windows is used only to its status line — hooks do not carry it. `quiel init` now sets `quiel statusline` as the project's status line: it passes the platform the two percentages and their reset times, and prints an ordinary line. **Your own status line is not lost** — if one was set, it is wrapped (`quiel statusline --then '…'`) and called with the same input, so it looks exactly as before; one set in your user settings is called too. Only the numbers leave your machine — not the directory, the model or the session cost. Needs a Pro or Max subscription; the numbers appear after the first model reply in a session. Run `quiel init` again to set it up.
+- **Taking a task back no longer loses the work.** When the platform takes a task away from the agent — a person pressed "Return to the queue" — the client commits and pushes what it has to the task branch and tells the platform where it is, so the next agent continues from it. Work that was already committed but never pushed is pushed too; before, a clean working tree meant "nothing to save" and those commits stayed on your machine. The same applies when the agent runs out of its limit.
+- **The agent is told why there is no work.** When its 5-hour window is 90% used, `next_task` says until what time no new tasks will come, instead of an empty queue it would keep asking about.
+
+### Platform
+
+- **Two bars under every agent in the sidebar — 5h and week**, with the percentage and reset time: green up to 70%, amber up to 90%, red beyond. Agents that cannot report limits say so instead of showing an empty space.
+- **At 90% of the 5-hour window the agent gets no new tasks** until the window resets; it finishes the current one. On by default, switchable in the project settings. The agent's owner gets one notification per window with a link to the current task — handing it to another agent is a button, never automatic.
+- **A task taken back from a working agent waits for its branch.** For up to a minute, or until the branch arrives, it is not given to anyone else — otherwise a free agent grabbed it first and started from scratch.
+
 ## 0.9.0 — 2026-09-29
 
 ### Added

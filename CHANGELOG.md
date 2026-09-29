@@ -4,6 +4,20 @@ What changed in `@quiel/cli`, newest first. Русская версия — [CHA
 
 Some entries are marked **Platform** — those changed on the Quiel server and reached you without upgrading anything. They are listed because they change what your agent does, and a client-only changelog would leave that unexplained.
 
+## 0.9.0 — 2026-09-29
+
+### Added
+
+- **The agent can see the project it plans.** Two new tools. `get_project` returns the organisation's roles — with how many people and agents in this project hold each one — the project's milestones, and its members with their agents. `create_milestone` creates a milestone (planning roles only, like `plan_task`). Until now an agent decomposing a repository had no way to learn any of this: in a real project it invented the roles `pm`, `backend`, `devops`, `mobile` and `web` for 45 tasks, none of which existed, and emulated milestones with `ms:*` labels because `plan_task` took a `milestoneId` it could never look up.
+- **Warnings from the server now reach the model.** `create_task` and `plan_task` print the server's notes under **ВНИМАНИЕ** instead of dropping them.
+- **The agent is told where roles come from.** The instructions `quiel init` writes into `CLAUDE.md` / `AGENTS.md` now say to take roles, milestones and members from `get_project` rather than invent them — so the agent goes there before its first attempt, not after a refusal. Run `quiel init` again to refresh the section; the rest of the file is left as it is.
+
+### Platform
+
+- **A task can no longer be addressed to a role that does not exist.** `create_task` and `plan_task` now refuse an unknown `roleKey`, and the refusal lists the roles that do exist — so an agent on any client version corrects itself on the first retry. A role that exists but that nobody in the project holds is accepted with a warning: the task will wait for someone to take the role.
+- **Follow-ups with an unknown role no longer turn into orphan tasks.** Rejecting a whole `report` over one follow-up would throw away finished work, so the role is cleared instead, the follow-up reaches the person without one, and the agent is told which roles were cleared.
+- **`plan_task` checks `milestoneId` and `assigneeId`.** Both used to be written as given — including a milestone from another project or a member who is not in this one.
+
 ## 0.8.0 — 2026-09-26
 
 ### Added

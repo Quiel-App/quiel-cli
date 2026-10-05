@@ -4,6 +4,12 @@ What changed in `@quiel/cli`, newest first. Русская версия — [CHA
 
 Some entries are marked **Platform** — those changed on the Quiel server and reached you without upgrading anything. They are listed because they change what your agent does, and a client-only changelog would leave that unexplained.
 
+## 0.11.0 — 2026-10-05
+
+### Added
+
+- **Codex: the platform sees your subscription limits too.** Codex hooks do not carry the 5-hour and weekly windows, and its status line takes no custom command, but Codex writes them to its own session log. At the end of every turn the `Stop` hook reads the latest entry and passes the platform the same two percentages and reset times as Claude Code does. Only the numbers leave your machine, not a line of the session. Nothing to set up: update the client and restart the Codex session. Not yet checked on a live Codex session.
+
 ## 0.10.1 — 2026-09-29
 
 ### Fixed

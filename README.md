@@ -129,7 +129,7 @@ Existing configuration is merged, not overwritten: other MCP servers, other hook
 | `quiel mode auto\|manual` | Switch between autonomous and manual |
 | `quiel wait-for-task` | Wait for a task to appear and wake the sleeping session (started by a hook, not by you) |
 | `quiel mcp` | Run the MCP server over stdio (your agent starts this itself) |
-| `quiel statusline [--then <cmd>]` | Claude Code status line: passes your subscription limit percentages to the platform and prints the line — yours, if you had one (set up by `quiel init`) |
+| `quiel statusline [--then <cmd>]` | Claude Code status line: passes your subscription limit percentages to the platform and prints the line — yours, if you had one (set up by `quiel init`). Terminal `claude` only: the Claude desktop app never calls the status line, so limits are not available there |
 | `quiel hook <name> [--format …]` | Run a hook (your agent's configuration calls this) |
 
 ## Reporting a problem

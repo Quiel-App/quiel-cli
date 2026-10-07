@@ -4,6 +4,20 @@ What changed in `@quiel/cli`, newest first. Русская версия — [CHA
 
 Some entries are marked **Platform** — those changed on the Quiel server and reached you without upgrading anything. They are listed because they change what your agent does, and a client-only changelog would leave that unexplained.
 
+## 0.12.1 — 2026-10-07
+
+### Added
+
+- **A freshly started session tells you how to get going.** An agent in auto mode starts listening for tasks and Live chats only after its first turn: Claude Code's task waiter starts at the end of a turn, and Codex enters its `next_task` loop on a message. Right after start nobody could wake it, and a Live chat went unanswered. Now, when a session starts in auto mode, the terminal shows what to type: `/quiel-auto` for Claude Code (or start the session with `claude "/quiel-auto"`), "call next_task" for Codex.
+
+### Fixed
+
+- **Limits on the Claude desktop app are explained instead of missing** ([#3](https://github.com/Quiel-App/quiel-cli/issues/3)). Claude Code reports subscription limits only to its status line, and the desktop app's Code tab never calls it, so no numbers ever came from there and it looked broken. The client now tells the platform where Claude Code runs (`CLAUDE_CODE_ENTRYPOINT`, just that word). The sidebar says "limits: unavailable on desktop", and `quiel status` shows a "Subscription limits" line with the reason. Hitting the limit is still reported from the desktop app.
+
+### Platform
+
+- **The Live chat shows the agent's status**: whether it is online (last signal) and when it last asked for work. If it is online but not listening, the chat says why and what to type.
+
 ## 0.12.0 — 2026-10-07
 
 ### Added

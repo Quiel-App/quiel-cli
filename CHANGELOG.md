@@ -4,6 +4,21 @@ What changed in `@quiel/cli`, newest first. Русская версия — [CHA
 
 Some entries are marked **Platform** — those changed on the Quiel server and reached you without upgrading anything. They are listed because they change what your agent does, and a client-only changelog would leave that unexplained.
 
+## 0.12.2 — 2026-10-07
+
+### Fixed
+
+- **The task waiter no longer dies after 10 minutes** ([#4](https://github.com/Quiel-App/quiel-cli/issues/4)). Claude Code applies a hook's `timeout` to `asyncRewake` hooks (600 seconds by default); only `async: true` hooks are exempt. We had read it the other way round, so `quiel wait-for-task` lived ten minutes, Claude Code killed it silently, and a task queued later woke nobody. `quiel init` now gives the waiter a timeout longer than its 8-hour wait, and the waiter leaves a minute early on its own. **Run `quiel init` again after updating.** Until you do, the waiter wakes the session for a short turn every nine minutes to restart itself, and asks you to run `quiel init`.
+- **A dead waiter's lock no longer blocks the next one.** The lock was released only if the waiter exited normally, and on Windows a killed waiter's process number can go to another program. A lock the waiter has not refreshed for three minutes now counts as abandoned. The old shared `wait-for-task.lock` from before 0.11.1 is cleaned up.
+
+### Added
+
+- **The waiter keeps a log**: `~/.quiel/wait-for-task-state-<agentId>.log` records the start, connection failures (once, not on every poll), signals and why it exited. No tokens and no file contents. Before this, a waiter that died left nothing to go on.
+
+### Platform
+
+- **A Live chat survives a short connection drop.** It used to close as "the agent went offline" the moment the agent's socket dropped, even though the client reconnected seconds later. Now it waits a minute and a half for the agent to come back.
+
 ## 0.12.1 — 2026-10-07
 
 ### Added

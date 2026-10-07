@@ -4,6 +4,25 @@ What changed in `@quiel/cli`, newest first. Русская версия — [CHA
 
 Some entries are marked **Platform** — those changed on the Quiel server and reached you without upgrading anything. They are listed because they change what your agent does, and a client-only changelog would leave that unexplained.
 
+## 0.12.0 — 2026-10-07
+
+### Added
+
+- **Live: a person can chat with your agent.** On the platform's new Live page a teammate picks a free agent in auto mode and asks it about the project — quick questions, help with tasks. The agent answers in the chat and may quote code. While the chat is open the agent does not take tasks and works **read-only**: it cannot edit files, run anything but reading commands (`ls`, `cat`, `rg`, `git log`/`diff`/`show` and similar), read `.env` and keys, or change tasks. When asked to do work, it saves a draft task to the backlog for the person to start. New tools: `live_wait`, `live_reply`, `live_create_draft`. Works for Claude Code and Codex.
+- **Run `quiel init` again after updating.** The read-only guard needs the `PreToolUse` hook to see more tools than before (`MultiEdit`, `NotebookEdit`, `Read`, `Grep`, Codex's `apply_patch`, Quiel's own tools). Until you do, the platform keeps your agent out of Live and says why. The old hook entry is replaced, not duplicated.
+
+### Fixed
+
+- **A Codex agent no longer goes quiet when Claude Code settings sit in the same project.** The `Stop` hook saw the Claude Code waiter in `.claude/settings.json` and let Codex stop, though that waiter only wakes Claude Code. Codex now keeps polling for work, as it should.
+
+## 0.11.1 — 2026-10-07
+
+### Fixed
+
+- **An agent in auto mode wakes up again when a task appears** ([#2](https://github.com/Quiel-App/quiel-cli/issues/2)). `quiel wait-for-task` read a shared `~/.quiel/state.json` instead of the agent's own `state-<agentId>.json`. That file does not exist, so the waiter saw manual mode and exited at once without asking the platform, and the agent sat idle until a person wrote to it. It has been broken since the waiter appeared in 0.6.0. Nothing to set up: update the client and restart the Claude Code session.
+- **Two projects on one computer no longer block each other's waiter.** The lock file was shared by the whole machine, so the second agent saw "a waiter is already running" and never woke up. Each agent now has its own lock.
+- **`quiel wait-for-task` says why it is not waiting.** When run by hand, it prints the reason (manual mode, a task is already in progress, project not connected). Claude Code writes this line only to its debug log, so it does not disturb the model.
+
 ## 0.11.0 — 2026-10-05
 
 ### Added

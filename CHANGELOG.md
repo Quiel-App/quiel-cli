@@ -4,6 +4,46 @@ What changed in `@quiel/cli`, newest first. Русская версия — [CHA
 
 Some entries are marked **Platform** — those changed on the Quiel server and reached you without upgrading anything. They are listed because they change what your agent does, and a client-only changelog would leave that unexplained.
 
+## 0.13.0 — 2026-10-13
+
+This release closes findings from a security audit of the platform. Most of it tightens the checks your agent's commands and file writes go through before they run. Nothing to re-run after updating: `quiel init` writes the same settings as before.
+
+### Security
+
+- **An approval is bound to the exact command and directory.** An approval for one command could be reused for another whose command and directory produced the same internal key. The pair is now stored unambiguously and both parts are compared on use. `request_approval` refuses a working directory that is not absolute or contains a null byte.
+- **The agent's own configuration is always protected.** Writing to the files that configure the agent and this hook (`~/.quiel`, `.quiel.json`, `.claude/settings*.json`, `.claude/hooks`, `.mcp.json`, `.codex`, `.cursor`, OpenCode settings, `.git/hooks`, `.git/config`) needs a person's approval under every trust profile, Full included. An agent can no longer relax its own rules or forge an approval by editing these files.
+- **File protection covers every way of writing.** `files.mode` and protected paths used to apply to Edit and Write only. They now also apply to MultiEdit, NotebookEdit, `apply_patch` (Codex, OpenCode) and to Bash commands that write files: redirections, `tee`, `sed -i`, `cp`, `mv`, `rm` and the like. Protected paths are matched from the repository root, so they also hold when the agent works in a subdirectory.
+- **Writes outside the project go to your agent's own permission prompt.** The system temp directory is the exception: it follows the profile as before.
+- **Stop patterns see more.** Before the stop list is checked, commands are normalised: `rm` flags in any order and spelling, `${HOME}`, SQL in any case (`drop table`), `git push` with global options, combined flags (`-fu`), `--force-with-lease` or a `+refspec`, shells called by full path (`/bin/bash -c`), many more wrappers (`time`, `nice`, `exec`, `doas`, `busybox` and others) and quoted text passed to programs the engine does not know. A commit message written through a quoted heredoc counts as text, so a commit that mentions `DROP TABLE` is not stopped.
+- **`allowPatterns` exceptions are narrower.** An exception now applies only to a single command without chaining, redirections or options that write or execute (`find -delete`, `rg --pre`, `git diff --output` and similar), is matched from the start of the command and never overrides a stop pattern. Redirections to `/dev/null` and `2>&1` do not count.
+- **An approval for a file write covers exactly the content that was requested.** The hook fingerprints the whole tool call (Write, Edit, MultiEdit, NotebookEdit, apply_patch, OpenCode write and edit) and the approval is tied to that fingerprint, so any other content for the same path needs a new approval. The platform receives only call statistics (files, lines added and removed, bytes), never the text of the write and nothing the agent supplies as a description of the change. The approval card and the Telegram message say so and show the fingerprint; the content can be checked in the agent's terminal. If an agent session started before the update is still running, restart it before approving a write.
+- **The agent token is sent only to the platform it was issued for.** `.quiel.json` comes from the repository, so its `url` could point at someone else's server. The URL is now compared with the one saved next to the token; on a mismatch nothing is sent and the message suggests `quiel init`.
+- **The agent id from `.quiel.json` can no longer point outside `~/.quiel`.** It must be letters, digits, `-` and `_` (up to 128); state and limits file paths are built only from a checked id and must stay inside `~/.quiel`.
+- **Protected paths ignore letter case.** Writes to `.ENV` or `Infra/main.tf` need approval, as they would on case-insensitive file systems.
+- **Continuing another agent's branch is safe.** The branch name another agent saved is checked like any other git argument and fetched with an explicit refspec, so git can no longer read it as an option or let it overwrite your local branches. An invalid name counts as a missing branch, and work starts from the default branch.
+
+### Changed
+
+- `request_approval` checks field lengths locally (description up to 1,000 characters, command up to 32,000) and tells the model what to shorten instead of failing on the server.
+- `report`, `log`, `release_task` and `update_task` do the same for the texts they send. Report result up to 50,000 characters, next steps up to 20,000, up to 50 links (address up to 2,048 characters, caption up to 200), a log line, an `update_task` note or a release reason up to 20,000 each, and the whole report together (result, next steps, follow-ups, links) up to 150,000. The tool schema shows the limits to the model, and a text over the limit comes back with the field name and a request to shorten it. Nothing is sent, and the task stays with the agent, so the same call works once the text is shorter.
+- `ask_human`, `create_task`, `plan_task`, `live_create_draft`, `request_approval` and `list_tasks` check lengths locally as well. A question up to 20,000 characters with up to 20 options of up to 500 each, a task description up to 50,000 and acceptance criteria up to 20,000 (the same numbers as in the web form), up to 30 labels of up to 40 characters each, the `request_approval` preview (`diff`) up to 50,000, a `list_tasks` search up to 200.
+- `next_task` tells a paused project from an empty queue. After the usual wait it says that no new tasks will come until the project is taken off pause, and asks the model to end its turn instead of calling again. Before, it said the queue was empty, which was untrue: tasks could be waiting. The agent is marked as having nothing to do, so the Stop hook lets it stop and the task waiter wakes it once the pause is lifted and work appears.
+- **The pause notice now works both ways in a running session.** When the project is taken off pause, `next_task` goes back to asking the platform at once. Before, a running session kept answering "paused" until it reconnected. A session that learned about the pause on its own is also marked as having nothing to do, so the Stop hook lets it stop instead of pushing it to call `next_task` again and again.
+- Under the Guarded profile a few commands that used to pass now ask for approval: lowercase destructive SQL (`drop table`) and a bare `TRUNCATE <table>` in capitals.
+
+### Platform
+
+- **Revoking a token disconnects the agent at once.** The same happens when its owner is removed from the project or loses all of the agent's roles, and when the project is deleted or archived. After restoring an archived project, start its agents again.
+- **A paused project hands out no new tasks.** Tasks already in progress can be finished. A waiting `next_task` in a paused project waits as long as for an empty queue, and if the pause is lifted meanwhile, the task is handed out by the same call. The final empty answer says the project is paused. A client older than this release does not know that and shows the usual "no tasks in the queue", at the usual pace.
+- **The texts an agent writes have limits.** A report's result and next steps, its follow-ups and links, a log line, a release reason, a question and its options, a task description and acceptance criteria, labels and the preview of an approval request used to have none, and a large report broke the agent's connection instead of getting a clear answer. Text over a limit is now refused with `invalid_payload` that names the field and what to shorten. Nothing is saved and the connection stays. A client older than this release has no local check, so a text longer than the limits comes back with that refusal: shorten the text and send it again, repeating `report` is safe.
+- **The default stop list of the Guarded profile was updated in existing workspaces too**, wherever it had not been changed by hand.
+- **Approval requests in Telegram show buttons only when the whole command and directory fit in the message.** Otherwise the message explains why and links to the approval on the site.
+- **Only the agent that holds a task's lease, or held it last, can save work on it** (`task:work_saved`).
+- **Load limits per agent**: one wait of each kind per connection (a repeated `next_task` replaces the previous one), at most 64 connections per token, a quota on command audit events. An honest agent does not reach them.
+- **Opening a pull request checks more**: the GitHub App installation must belong to the project's workspace, and file names and titles from the agent are written into the description on one line each.
+- **Pull requests from forks are not linked to tasks automatically.**
+- **The platform no longer takes the agent's word for which task it is on.** The current task comes from the agent's own lease, not from the heartbeat.
+
 ## 0.12.2 — 2026-10-07
 
 ### Fixed

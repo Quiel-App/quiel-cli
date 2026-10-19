@@ -4,6 +4,20 @@ What changed in `@quiel/cli`, newest first. Русская версия — [CHA
 
 Some entries are marked **Platform** — those changed on the Quiel server and reached you without upgrading anything. They are listed because they change what your agent does, and a client-only changelog would leave that unexplained.
 
+## 0.13.1 — 2026-10-19
+
+### Fixed
+
+- **An agent no longer gets stuck after the MCP server reconnects** ([#5](https://github.com/Quiel-App/quiel-cli/issues/5)). If a task's lease expired while the `quiel` MCP server was disconnected and the platform then handed the same task back to the same agent, the client still remembered the old loss. `report`, `log`, `get_task` and `release_task` answered "lease lost: expired", and `next_task` refused with "you already have an active task", so the agent waited for a person. The client now forgets the old loss when the task is handed out again, or when the platform confirms on reconnect that the task is still the agent's.
+- `next_task` no longer stops on a task whose lease is lost: it drops that task and takes the next one.
+- `release_task` on a task whose lease is lost clears it locally instead of refusing, so the Stop hook no longer asks to report it.
+
+### Changed
+
+- **`next_task` tells the model that the client keeps the lease** ([#6](https://github.com/Quiel-App/quiel-cli/issues/6)). The `quiel mcp` process renews the lease with a heartbeat every 30 seconds, whatever the model is doing, so the agent can hand work to a subagent for a long time without calling Quiel tools to stay alive. The docs now say so too, along with the default lease length (120 seconds, set per project).
+- **`quiel mcp` writes a lifecycle log to stderr**, which Claude Code keeps in its MCP log (`mcp-logs-quiel`): start with process id and version, connect, disconnect, reconnect attempts, lost leases, errors (the same error at most once a minute) and exit. When the server disappears, the log now shows when it was last alive ([#5](https://github.com/Quiel-App/quiel-cli/issues/5)).
+- **`next_task` warns against killing every Node process.** `quiel mcp` runs on Node, so `taskkill /IM node.exe`, `pkill node` or `killall node` also kill it and the lease expires. The model is asked to stop dev servers by process id or port instead ([#5](https://github.com/Quiel-App/quiel-cli/issues/5)).
+
 ## 0.13.0 — 2026-10-13
 
 This release closes findings from a security audit of the platform. Most of it tightens the checks your agent's commands and file writes go through before they run. Nothing to re-run after updating: `quiel init` writes the same settings as before.

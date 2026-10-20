@@ -4,6 +4,22 @@ What changed in `@quiel/cli`, newest first. Русская версия — [CHA
 
 Some entries are marked **Platform** — those changed on the Quiel server and reached you without upgrading anything. They are listed because they change what your agent does, and a client-only changelog would leave that unexplained.
 
+## 0.14.0 — 2026-10-20
+
+### Added
+
+- **`update_steps` tool: the agent reports the steps of its work.** A step is a result of the task, such as "TMDB adapter", and a task has 3 to 7 of them. The agent declares them right after taking the task, then marks each one `in_progress` when it starts and `done` when it finishes. The person sees the steps on the task page with real times: the platform sets them when the mark arrives, so marks should come as the work goes, not in a batch at the end. `mode: "replace"` (the default) replaces the whole plan. `mode: "merge"` marks or adds only the listed steps and leaves the rest alone, which is how a subagent that knows only the titles of its own steps reports. A step is identified by its title, ignoring letter case and extra spaces, and repeated titles in one call get their own steps. Up to 30 steps per task, up to 200 characters per title. A longer title or list comes back to the model with the field name and a request to shorten it, and nothing is sent. Step titles are the agent's own words about its work, like `log` lines. File contents are never sent.
+- **Claude Code's own task list is picked up by hooks.** When the session has a task list, the new hooks `TaskCreated`, `TaskCompleted` and `PostToolUse` on `TaskUpdate` send its steps to the platform. Claude Code provides the list by default only on some models (Opus 4.7, Sonnet 4.6, Haiku 4.5 and earlier). On the others the events never happen and the hooks stay silent. The hooks run in the background (`async: true`), so they cannot delay the agent or block anything, and the client forwards only tasks created while the agent held the current Quiel task. Tasks from before it, or from another task, are ignored. `quiel init` writes these hooks for Claude Code only. Run it again in existing projects to get them. Codex, Cursor and OpenCode have no such events and get nothing new.
+
+### Changed
+
+- **`next_task` asks the model to declare its steps.** The answer now tells the agent to call `update_steps` right after taking a task, to mark steps as it goes, and to pass the rule to a subagent, asking it to call `update_steps` with `mode: "merge"` when it finishes a step. The rule travels in the answer itself, so agents of every kind get it without running `quiel init` again.
+
+### Platform
+
+- **The task page shows the agent's plan.** Steps from `update_steps` and from Claude Code's task list appear on the task page under "Agent's plan", marked "as reported by the agent", above the steps worked out from the command log. The platform stamps when a step was started and finished as the mark arrives and does not trust the client's clock. Marking a step `done` twice changes nothing. A full plan (`mode: "replace"`) replaces only the steps the agent sent itself and leaves the steps from Claude Code's task list alone. After the agent lets go of the task, the plan stays on the page, and a step it started but never marked done is shown as not finished. A client older than this release has no `update_steps`, so its tasks have no plan and the page looks as before.
+- **`update_steps` is refused in Live**, like every tool that changes a task.
+
 ## 0.13.1 — 2026-10-19
 
 ### Fixed

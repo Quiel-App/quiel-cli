@@ -4,6 +4,18 @@ What changed in `@quiel/cli`, newest first. Русская версия — [CHA
 
 Some entries are marked **Platform** — those changed on the Quiel server and reached you without upgrading anything. They are listed because they change what your agent does, and a client-only changelog would leave that unexplained.
 
+## 0.14.1 — 2026-10-20
+
+### Fixed
+
+- **The per-session task limit now actually stops the agent** ([#7](https://github.com/Quiel-App/quiel-cli/issues/7)). After the number of submissions set in the project ("Ask for /clear after this many tasks", 8 by default), the agent should stop and wait for a `/clear`. The limit was only checked at the end of a turn, so within one turn the agent went on taking tasks (10 submissions at a limit of 8), and the task waiter, which did not know about the limit, later woke it for the next task. The owner was told "the agent no longer takes tasks" while it kept working, once up to 32 submissions in a row. Now `next_task` does not ask the platform for a task once the limit is reached, and the waiter does not wake the agent for tasks. A Live conversation still wakes it: it does not count as a task.
+- **The client now uses the limit set in the project.** It never received the value and always counted to 8. The platform now sends it when the agent connects and with every task, so a change on the site applies without a reconnect.
+- **The agent is told why it stopped.** `next_task` answers that the limit is reached, with both numbers, that this is not an empty queue, and that a person has to run `/clear`. `set_mode(auto)` says the same instead of a bare "confirmed". The context at session start explains "12 of 8" instead of showing the numbers alone. Before, the agent got the usual "queue is empty" and could not tell the two apart.
+
+### Platform
+
+- **The "agent stopped" notification names the project**, how many tasks were submitted and how many of them were distinct (a task returned from review and submitted again counts twice), and the limit. Its link leads to the project settings, where the limit is changed. Before, it said only "Submitted in a row: 10", which was ambiguous when one person had agents with the same name in several projects.
+
 ## 0.14.0 — 2026-10-20
 
 ### Added

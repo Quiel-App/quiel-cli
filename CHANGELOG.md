@@ -4,6 +4,24 @@ What changed in `@quiel/cli`, newest first. Русская версия — [CHA
 
 Some entries are marked **Platform** — those changed on the Quiel server and reached you without upgrading anything. They are listed because they change what your agent does, and a client-only changelog would leave that unexplained.
 
+## 0.15.0 — 2026-10-21
+
+### Added
+
+- **Skills arrive with the task.** A workspace keeps a library of agent skills, and an owner or admin approves every version. When a task comes with skills (attached to the task, its agent, role or project), `next_task` installs them into the task's working tree: `.claude/skills/<name>` for Claude Code, `.agents/skills/<name>` for Codex, Cursor and OpenCode. The answer tells the agent which skills are installed, what was removed from them and which ones did not install and why. After `report` or `release_task` the folders of that task are removed, and each folder has its own `.gitignore`, so skills never end up in a commit. A folder with the same name but without the `.quiel-managed` mark is your own skill: the client leaves it alone and does not install its version. The client only downloads skills. Skills are created and imported by people in the browser, and the client has no code that uploads anything.
+- **`report` takes `skillsUsed`: the task skills the agent actually applied.** For Claude Code a background hook on the `Skill` tool also notes each call, and the client sends it as `skillsInvoked`. The platform keeps the two apart: the agent's own words and the trace of a call are not the same evidence. `quiel init` adds the hook (`PostToolUse` with the `Skill` matcher); run it again in existing projects. Only skill names are sent.
+
+### Security
+
+- **A skill is checked before it is written to disk.** The client compares the size and SHA-256 of every file and the checksum of the whole set with the approved version, then runs the skill scanner again. A skill that fails any check is not installed.
+- **`allowed-tools` and `hooks` are removed from the skill header, and `` !`...` `` lines and ```` ```! ```` blocks become plain text.** A skill must not grant itself tool permissions or register hooks for the rest of the session, and Claude Code must not run commands from a skill before the model has read it.
+- **`quiel init` sets `disableSkillShellExecution: true`** in `.claude/settings.json`, even over an explicit `false`, so that commands in skills from other sources do not run either. Run `quiel init` again in existing projects.
+
+### Platform
+
+- **The skill library.** "Skills" in the sidebar: add a skill in the editor, from a `.zip` archive or from a folder in a public GitHub repository. A scanner checks every version for invisible characters, commands that run before the model reads the skill, `curl | sh`, executable files and more. Versions with blocking findings are not saved, and the rest wait for an owner or admin. Only approved versions reach agents, a task gets at most 20 skills, and the nearest binding wins: task, agent, role, project.
+- **Skill usage is recorded.** The platform notes which skill versions went out with each task and, when the task is submitted, which of them were used. The skill page shows it per version: how many tasks it went out with, where it was used, and, once there are at least 10 finished tasks on each side, how those tasks compare with tasks of the same projects and roles without the skill (accepted on the first try, returns, time to acceptance, tokens). With fewer tasks it shows no numbers, only how many there are.
+
 ## 0.14.1 — 2026-10-20
 
 ### Fixed
